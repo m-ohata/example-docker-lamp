@@ -1,0 +1,22 @@
+version: "2"
+services:
+  web:
+    build: ../images/php
+    container_name: web
+    image: myphp
+    ports:
+      - "80:80"
+    links:
+      - mysql
+    volumes:
+      - ../public:/var/www/html
+    restart: always
+  mysql:
+    container_name: mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+    ports:
+      - "3306:3306"
+    restart: always
+
