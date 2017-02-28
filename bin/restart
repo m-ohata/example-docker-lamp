@@ -1,0 +1,8 @@
+#!/bin/bash
+script_dir="$(cd "$(dirname "${BASH_SOURCE:-${(%):-%N}}")"; pwd)"
+cd "$script_dir/../example/"
+
+docker-compose stop
+docker-compose rm -f
+docker-compose up -d
+

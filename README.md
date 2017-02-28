@@ -1,9 +1,13 @@
 # Overview
 
 LAMP環境を構築するサンプルです。  
-DockerとDocker Composeを利用して、少ないコマンドで開発環境を構築するベストプラクティスを考えていきます。
+[1コマンドで作った。Dockerで開発環境を構築する方法](http://sitest.jp/blog/?p=8823)という記事を通して  
+少ないコマンドで開発環境を構築するベストプラクティスを考えていきます。
 
 # Installation
+
+まずはソースコードをDLして下さい。  
+Gitが入っていれば下記のコマンドでDLできます。
 
 ```bash
 $ git clone https://github.com/m-ohata/example-docker-lamp.git
@@ -11,7 +15,9 @@ $ git clone https://github.com/m-ohata/example-docker-lamp.git
 
 ## Docker
 
-OSによって以下の導入方法を使い分けてください。
+DockerはLinux上でなければ動作しませんが、  
+軽量な仮想のLinuxマシンを立てて、その中にDockerコマンドを注入する仕組みを公開しています。  
+Windows版、Mac版も試してみて下さい。
 
 - Linux: [Docker Engine](https://docs.docker.com/engine/installation/)
 - Windows: [Docker for Windows](https://docs.docker.com/docker-for-windows/install/)
@@ -19,7 +25,11 @@ OSによって以下の導入方法を使い分けてください。
 
 ## Docker Compose
 
-[Install Docker Compose](https://docs.docker.com/compose/install/)を参照してください。
+Dockerでコンテナを操作する為には沢山のオプションを使いこなす必要があります。  
+Docker Composeはシステム構築に於けるオプションをテキストファイルで管理できるオーケストレーションツールです。  
+(Docker for Mac上で動作することを確認しております)
+
+参考Url: [Install Docker Compose](https://docs.docker.com/compose/install/)
 
 ```Bash
 $ curl -L "https://github.com/docker/compose/releases/download/1.11.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -32,40 +42,79 @@ $ docker-compose --version
 
 # Usage
 
-## PHPイメージのビルド
+## コマンド一覧を確認
 
-公式のPHPイメージはLAMPを構成する為のライブラリが不足しています。  
-下記のコマンドを入力して依存ライブラリを追加したイメージをビルドします。
-
-```Bash
-$ cd example-docker-lamp/example
-
-$ docker-compose build
-```
-
-## サーバーの起動
+Docker Composeコマンドも煩わしいので、  
+頻出コマンドはシェルスクリプトでまとめました。
 
 ```Bash
-$ cd example-docker-lamp/example
-
-// バックグラウンドモードで立ち上げる
-$ docker-compose up -d
-
-// ログを確認(-fは監視モード)
-$ docker-compose log -f
+$ ls bin
+build  log  restart  start  status  stop
 ```
 
-## サーバーの停止
+各コマンドの動作は以下の項目で紹介していきます。
+
+## イメージのビルド
+
+公式のPHPイメージは最小構成で動作させる事が目的ですので、  
+LAMPを構成する為のライブラリが不足しています。  
+サーバを起動する前に依存モジュールを追加したイメージをビルドします。
 
 ```Bash
-$ cd example-docker-lamp/example
-
-// サーバーの停止
-$ docker-compose stop
-
-// コンテナの削除
-$ docker-compose rm -fa
+$ bin/build
 ```
+
+## サーバの操作
+
+```Bash
+// サーバを起動
+$ bin/start
+Creating mysql
+Creating web
+
+// サーバの状態を確認
+$ bin/status
+Name               Command               State           Ports
+-----------------------------------------------------------------------
+mysql   docker-entrypoint.sh mysqld      Up      0.0.0.0:3306->3306/tcp
+web     docker-php-entrypoint apac ...   Up      0.0.0.0:80->80/tcp
+
+// サーバのログを確認
+$ bin/log
+(Ctrl + Cで抜ける)
+
+// サーバをリスタート
+$ bin/restart
+Stopping web ... done
+Stopping mysql ... done
+Going to remove web, mysql
+Removing web ... done
+Removing mysql ... done
+Creating mysql
+Creating web
+
+// サーバを停止
+$ bin/stop
+Stopping web ... done
+Stopping mysql ... done
+Going to remove web, mysql
+Removing web ... done
+Removing mysql ... done
+```
+
+# Description
+
+## Directories
+
+ディレクトリ構成は以下を意識しています。
+
+- bin: docker-composeの頻出コマンドをまとめた
+- example: docker-compose.yml置き場
+- images: Dockerfile置き場
+  - php: 依存モジュールを組み込んだPHPイメージ
+- public: Apacheの公開領域
+
+公開領域以外のファイルはLAMP環境を問わず学習の足しになるかと考えていますので、是非参照してみてください。
 
 # Links
 
